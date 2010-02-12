@@ -1,5 +1,4 @@
 // includes from OpenEngine base
-#include <Meta/Config.h>
 #include <Logging/Logger.h>
 #include <Logging/StreamLogger.h>
 #include <Resources/Tex.h>

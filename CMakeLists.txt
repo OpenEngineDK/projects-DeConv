@@ -23,6 +23,7 @@ TARGET_LINK_LIBRARIES(${PROJECT_NAME}
   # Core library dependencies
   OpenEngine_Core
   OpenEngine_Logging
+  OpenEngine_Scene # @todo: remove this!!!
   OpenEngine_Utils
   OpenEngine_Resources
   # Extension dependencies
