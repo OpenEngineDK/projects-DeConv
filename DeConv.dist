@@ -1,0 +1,20 @@
+# Distribution file for the DeConv project.
+# http://www.openengine.dk/wiki/Projects/DeConv
+
+# main repository
+darcs / http://openengine.dk/code/openengine
+darcs-dev / fh.daimi.au.dk:/users/cgd/code/openengine
+
+# project repository
+darcs /projects/DeConv http://openengine.dk/code/projects/DeConv
+darcs-dev /projects/DeConv fh.daimi.au.dk:/users/cgd/code/projects/DeConv
+
+# required extensions
+darcs /extensions/TexUtils      http://openengine.dk/code/extensions/TexUtils
+darcs /extensions/FreeImage     http://openengine.dk/code/extensions/FreeImage
+
+darcs-dev /extensions/TexUtils  fh.daimi.au.dk:/users/cgd/code/extensions/TexUtils
+darcs-dev /extensions/FreeImage fh.daimi.au.dk:/users/cgd/code/extensions/FreeImage
+
+# project data
+any /projects/DeConv/data    http://www.openengine.dk/data/images/lena.png
