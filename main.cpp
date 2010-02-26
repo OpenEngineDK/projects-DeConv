@@ -206,9 +206,10 @@ int main(int argc, char** argv) {
 
     // load and convert input file
     string filename = "lena.png";
-        ITextureResourcePtr tex =
-        ResourceManager<ITextureResource>::Create(filename);
+    ITexture2DPtr tex =
+        ResourceManager<ITexture2D>::Create(filename);
     tex->Load();    
+
     EmptyTextureResourcePtr ut_tex =
         EmptyTextureResource::CloneChannel(tex,0);
     Tex<REAL>* u0 = new Tex<REAL>(*ut_tex);
