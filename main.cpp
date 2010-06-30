@@ -5,6 +5,7 @@
 #include <Resources/ResourceManager.h>
 #include <Resources/DirectoryManager.h>
 #include <Utils/Timer.h>
+#include <Utils/ValueNoise.h>
 
 // includes from OpenEngine extensions
 #include <Resources/FreeImage.h>
@@ -222,16 +223,16 @@ int main(int argc, char** argv) {
 
     // dump converted image to disc
     u0->CopyToTexture(output);
-    TextureTool::DumpTexture(output, "u0.png");
+    TextureTool<unsigned char>::DumpTexture(Utils::ValueNoise::ToRGBAfromLuminance(output), "u0.png");
 
     // run initiali heat equation
     Tex<REAL>* v0 = J(0.24, u0);
     v0->CopyToTexture(output);
-    TextureTool::DumpTexture(output, "v0.png");
+    TextureTool<unsigned char>::DumpTexture(Utils::ValueNoise::ToRGBAfromLuminance(output), "v0.png");
 
     EmptyTextureResourcePtr result = ROFEquation(0.000001, u0, v0);
     string outputFile = "output.png";
-    TextureTool::DumpTexture(result, outputFile);
+    TextureTool<unsigned char>::DumpTexture(Utils::ValueNoise::ToRGBAfromLuminance(result), outputFile);
 
     logger.info << "execution time: " << timer.GetElapsedTime() << logger.end;
     return EXIT_SUCCESS;
