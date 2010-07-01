@@ -1,11 +1,12 @@
 // includes from OpenEngine base
 #include <Logging/Logger.h>
 #include <Logging/StreamLogger.h>
+#include <Resources/Texture2D.h>
 #include <Resources/Tex.h>
 #include <Resources/ResourceManager.h>
 #include <Resources/DirectoryManager.h>
 #include <Utils/Timer.h>
-#include <Utils/ValueNoise.h>
+#include <Utils/TexUtils.h>
 
 // includes from OpenEngine extensions
 #include <Resources/FreeImage.h>
@@ -25,10 +26,10 @@ REAL abso(REAL n) {
     return n;
 }
 
-REAL HeatEquation(REAL dt, Tex<REAL>* ut) {
+REAL HeatEquation(REAL dt, FloatTexture2DPtr ut) {
     unsigned int w = ut->GetWidth();
     unsigned int h = ut->GetHeight();
-    Tex<REAL>* u0 = new Tex<REAL>(*ut);
+    FloatTexture2DPtr u0(ut->Clone());
     
     REAL error = 0.0f;
     for (unsigned int x=1; x<w-1; x++) {
@@ -52,12 +53,12 @@ REAL HeatEquation(REAL dt, Tex<REAL>* ut) {
         (*ut)(x,h-1) = (*ut)(x,h-2);
     }
 
-    delete u0;
+    //delete u0;
     return error;
 }
 
-Tex<REAL>* J(REAL dt, Tex<REAL>* input) {
-    Tex<REAL>* calc = new Tex<REAL>(*input);
+FloatTexture2DPtr J(REAL dt, FloatTexture2DPtr input) {
+    FloatTexture2DPtr calc(input->Clone());
 
     static unsigned int count = 0;
     static bool done = false;
@@ -81,17 +82,17 @@ Tex<REAL>* J(REAL dt, Tex<REAL>* input) {
     return calc;
 }
 
-Tex<REAL>* ROFIteration(REAL dt,
-               Tex<REAL>* u0,
-               Tex<REAL>* v0,
-               Tex<REAL>* w,
-               Tex<REAL>* un) {
+FloatTexture2DPtr ROFIteration(REAL dt,
+               FloatTexture2DPtr u0,
+               FloatTexture2DPtr v0,
+               FloatTexture2DPtr w,
+               FloatTexture2DPtr un) {
 
     unsigned int uw = u0->GetWidth();
     unsigned int uh = u0->GetHeight();
-    Tex<REAL>* utp = new Tex<REAL>(uw,uh);
+    FloatTexture2DPtr utp = FloatTexture2DPtr(new Texture2D<REAL>(uw,uh,1));
 
-    REAL dx = 1, dy =1;
+    REAL dx = 1, dy = 1;
     REAL beta = 0.00001;
     REAL my = 50000; //0.026691;
     
@@ -165,31 +166,25 @@ Tex<REAL>* ROFIteration(REAL dt,
     return utp;
 }
 
-EmptyTextureResourcePtr ROFEquation(REAL dt,
-                                    Tex<REAL>* u0,
-                                    Tex<REAL>* v0) {
+FloatTexture2DPtr ROFEquation(REAL dt,
+                              FloatTexture2DPtr u0,
+                              FloatTexture2DPtr v0) {
     
-    Tex<REAL>* ut = new Tex<REAL>(*u0);
+    FloatTexture2DPtr ut(u0->Clone());
     for (unsigned int i=0; i<40/*180*/; i++) {
-        Tex<REAL>* Jt = J(dt, ut);
-        Tex<REAL>* w = J(dt, new Tex<REAL>(*Jt));
+        FloatTexture2DPtr Jt = J(dt, ut);
+        FloatTexture2DPtr w = J(dt, FloatTexture2DPtr(Jt->Clone()));
 
-        Tex<REAL>* utp = ROFIteration(dt,u0,v0,w,ut);
+        FloatTexture2DPtr utp = ROFIteration(dt,u0,v0,w,ut);
 
         logger.info << "ROF Equation (iteration " << i << "), " << logger.end;
     
         // swap
-        Tex<REAL>* tmp = ut;
+        FloatTexture2DPtr tmp = ut;
         ut = utp;
         utp = tmp;
     }
-
-    unsigned int w = u0->GetWidth();
-    unsigned int h = u0->GetHeight();    
-    EmptyTextureResourcePtr output = 
-        EmptyTextureResource::Create(w,h,8);
-    ut->CopyToTexture(output);
-    return output;
+    return ut;
 }
 
 int main(int argc, char** argv) {
@@ -205,34 +200,33 @@ int main(int argc, char** argv) {
     DirectoryManager::AppendPath("./projects/DeConv/data/");
     ResourceManager<ITextureResource>::AddPlugin(new FreeImagePlugin());
 
-    // load and convert input file
+    // load the RGBA gray scale input file
     string filename = "lena.png";
     ITexture2DPtr tex =
         ResourceManager<ITexture2D>::Create(filename);
     tex->Load();    
 
+    // peel out one channel for gray scale from the RGBA texture.
     EmptyTextureResourcePtr ut_tex =
         EmptyTextureResource::CloneChannel(tex,0);
-    Tex<REAL>* u0 = new Tex<REAL>(*ut_tex);
+    //@todo: RGBAToGrayScale()
+
+    // convert to floating point arrays
+    FloatTexture2DPtr u0 = Utils::TexUtils::ToFloatTexture(ut_tex);
 
     // create a output canvas
-    unsigned int w = u0->GetWidth();
-    unsigned int h = u0->GetHeight();
-    EmptyTextureResourcePtr output =
-        EmptyTextureResource::Create(w,h,8);
-
-    // dump converted image to disc
-    u0->CopyToTexture(output);
-    TextureTool<unsigned char>::DumpTexture(Utils::ValueNoise::ToRGBAfromLuminance(output), "u0.png");
+    UCharTexture2DPtr output = Utils::TexUtils::ToUCharTexture(u0);
+    TextureTool<unsigned char>::DumpTexture(Utils::TexUtils::ToRGBAfromLuminance(output), "u0.png");
 
     // run initiali heat equation
-    Tex<REAL>* v0 = J(0.24, u0);
-    v0->CopyToTexture(output);
-    TextureTool<unsigned char>::DumpTexture(Utils::ValueNoise::ToRGBAfromLuminance(output), "v0.png");
+    FloatTexture2DPtr v0 = J(0.24, u0);
+    output = Utils::TexUtils::ToUCharTexture(v0);
+    TextureTool<unsigned char>::DumpTexture(Utils::TexUtils::ToRGBAfromLuminance(output), "v0.png");
 
-    EmptyTextureResourcePtr result = ROFEquation(0.000001, u0, v0);
+    FloatTexture2DPtr result = ROFEquation(0.000001, u0, v0);
     string outputFile = "output.png";
-    TextureTool<unsigned char>::DumpTexture(Utils::ValueNoise::ToRGBAfromLuminance(result), outputFile);
+    output = Utils::TexUtils::ToUCharTexture(result);
+    TextureTool<unsigned char>::DumpTexture(Utils::TexUtils::ToRGBAfromLuminance(output), outputFile);
 
     logger.info << "execution time: " << timer.GetElapsedTime() << logger.end;
     return EXIT_SUCCESS;
