@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
     //@todo: RGBAToGrayScale()
 
     // convert to floating point arrays
-    FloatTexture2DPtr u0 = Utils::TexUtils::ToFloatTexture(ut_tex);
+    FloatTexture2DPtr u0 = Utils::TexUtils::ToFloatTexture<float>(ut_tex);
 
     // create a output canvas
     UCharTexture2DPtr output = Utils::TexUtils::ToUCharTexture(u0);
