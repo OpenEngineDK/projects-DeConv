@@ -2,19 +2,19 @@
 # http://www.openengine.dk/wiki/Projects/DeConv
 
 # main repository
-darcs / http://openengine.dk/code/openengine
-darcs-dev / fh.daimi.au.dk:/users/cgd/code/openengine
+git / https://github.com/OpenEngineDK/openengine.git
+git-dev / git@github.com:OpenEngineDK/openengine.git
 
 # project repository
-darcs /projects/DeConv http://openengine.dk/code/projects/DeConv
-darcs-dev /projects/DeConv fh.daimi.au.dk:/users/cgd/code/projects/DeConv
+git /projects/DeConv https://github.com/OpenEngineDK/projects-DeConv.git
+git-dev /projects/DeConv git@github.com:OpenEngineDK/projects-DeConv.git
 
 # required extensions
-darcs /extensions/TexUtils      http://openengine.dk/code/extensions/TexUtils
-darcs /extensions/FreeImage     http://openengine.dk/code/extensions/FreeImage
+git /extensions/TexUtils      https://github.com/OpenEngineDK/extensions-TexUtils.git
+git /extensions/FreeImage     https://github.com/OpenEngineDK/extensions-FreeImage.git
 
-darcs-dev /extensions/TexUtils  fh.daimi.au.dk:/users/cgd/code/extensions/TexUtils
-darcs-dev /extensions/FreeImage fh.daimi.au.dk:/users/cgd/code/extensions/FreeImage
+git-dev /extensions/TexUtils  git@github.com:OpenEngineDK/extensions-TexUtils.git
+git-dev /extensions/FreeImage git@github.com:OpenEngineDK/extensions-FreeImage.git
 
 # project data
 any /projects/DeConv/data    http://www.openengine.dk/data/images/lena.png
